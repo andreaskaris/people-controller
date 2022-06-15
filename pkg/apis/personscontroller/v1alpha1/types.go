@@ -34,13 +34,14 @@ type Person struct {
 
 // PersonSpec is the spec for a Person resource
 type PersonSpec struct {
-	DeploymentName string `json:"deploymentName"`
-	Replicas       *int32 `json:"replicas"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Age       *int32 `json:"age"`
 }
 
 // PersonStatus is the status for a Person resource
 type PersonStatus struct {
-	AvailableReplicas int32 `json:"availableReplicas"`
+	IsAdult bool `json:"isAdult"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

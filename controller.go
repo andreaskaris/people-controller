@@ -37,14 +37,14 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	samplev1alpha1 "k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1"
-	clientset "k8s.io/sample-controller/pkg/generated/clientset/versioned"
-	samplescheme "k8s.io/sample-controller/pkg/generated/clientset/versioned/scheme"
-	informers "k8s.io/sample-controller/pkg/generated/informers/externalversions/samplecontroller/v1alpha1"
-	listers "k8s.io/sample-controller/pkg/generated/listers/samplecontroller/v1alpha1"
+	samplev1alpha1 "github.com/andreaskaris/people-controller/pkg/apis/personscontroller/v1alpha1"
+	clientset "github.com/andreaskaris/people-controller/pkg/generated/clientset/versioned"
+	samplescheme "github.com/andreaskaris/people-controller/pkg/generated/clientset/versioned/scheme"
+	informers "github.com/andreaskaris/people-controller/pkg/generated/informers/externalversions/personscontroller/v1alpha1"
+	listers "github.com/andreaskaris/people-controller/pkg/generated/listers/personscontroller/v1alpha1"
 )
 
-const controllerAgentName = "sample-controller"
+const controllerAgentName = "people-controller"
 
 const (
 	// SuccessSynced is used as part of the Event 'reason' when a Person is synced
@@ -70,8 +70,8 @@ type Controller struct {
 
 	deploymentsLister appslisters.DeploymentLister
 	deploymentsSynced cache.InformerSynced
-	peopleLister        listers.PersonLister
-	peopleSynced        cache.InformerSynced
+	peopleLister      listers.PersonLister
+	peopleSynced      cache.InformerSynced
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
 	// processed instead of performing it as soon as a change happens. This
@@ -106,8 +106,8 @@ func NewController(
 		sampleclientset:   sampleclientset,
 		deploymentsLister: deploymentInformer.Lister(),
 		deploymentsSynced: deploymentInformer.Informer().HasSynced,
-		peopleLister:        personInformer.Lister(),
-		peopleSynced:        personInformer.Informer().HasSynced,
+		peopleLister:      personInformer.Lister(),
+		peopleSynced:      personInformer.Informer().HasSynced,
 		workqueue:         workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "People"),
 		recorder:          recorder,
 	}
@@ -249,7 +249,7 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	// Get the Person resource with this namespace/name
-	person, err := c.peopleLister.People(namespace).Get(name)
+	person, err := c.peopleLister.Persons(namespace).Get(name)
 	if err != nil {
 		// The Person resource may no longer exist, in which case we stop
 		// processing.
@@ -261,55 +261,10 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	deploymentName := person.Spec.DeploymentName
-	if deploymentName == "" {
-		// We choose to absorb the error here as the worker would requeue the
-		// resource otherwise. Instead, the next time the resource is updated
-		// the resource will be queued again.
-		utilruntime.HandleError(fmt.Errorf("%s: deployment name must be specified", key))
-		return nil
-	}
-
-	// Get the deployment with the name specified in Person.spec
-	deployment, err := c.deploymentsLister.Deployments(person.Namespace).Get(deploymentName)
-	// If the resource doesn't exist, we'll create it
-	if errors.IsNotFound(err) {
-		deployment, err = c.kubeclientset.AppsV1().Deployments(person.Namespace).Create(context.TODO(), newDeployment(person), metav1.CreateOptions{})
-	}
-
-	// If an error occurs during Get/Create, we'll requeue the item so we can
-	// attempt processing again later. This could have been caused by a
-	// temporary network failure, or any other transient reason.
-	if err != nil {
-		return err
-	}
-
-	// If the Deployment is not controlled by this Person resource, we should log
-	// a warning to the event recorder and return error msg.
-	if !metav1.IsControlledBy(deployment, person) {
-		msg := fmt.Sprintf(MessageResourceExists, deployment.Name)
-		c.recorder.Event(person, corev1.EventTypeWarning, ErrResourceExists, msg)
-		return fmt.Errorf("%s", msg)
-	}
-
-	// If this number of the replicas on the Person resource is specified, and the
-	// number does not equal the current desired replicas on the Deployment, we
-	// should update the Deployment resource.
-	if person.Spec.Replicas != nil && *person.Spec.Replicas != *deployment.Spec.Replicas {
-		klog.V(4).Infof("Person %s replicas: %d, deployment replicas: %d", name, *person.Spec.Replicas, *deployment.Spec.Replicas)
-		deployment, err = c.kubeclientset.AppsV1().Deployments(person.Namespace).Update(context.TODO(), newDeployment(person), metav1.UpdateOptions{})
-	}
-
-	// If an error occurs during Update, we'll requeue the item so we can
-	// attempt processing again later. This could have been caused by a
-	// temporary network failure, or any other transient reason.
-	if err != nil {
-		return err
-	}
-
 	// Finally, we update the status block of the Person resource to reflect the
 	// current state of the world
-	err = c.updatePersonStatus(person, deployment)
+	isAdult := *person.Spec.Age >= int32(18)
+	err = c.updatePersonStatus(person, isAdult)
 	if err != nil {
 		return err
 	}
@@ -318,17 +273,17 @@ func (c *Controller) syncHandler(key string) error {
 	return nil
 }
 
-func (c *Controller) updatePersonStatus(person *samplev1alpha1.Person, deployment *appsv1.Deployment) error {
+func (c *Controller) updatePersonStatus(person *samplev1alpha1.Person, isAdult bool) error {
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
 	personCopy := person.DeepCopy()
-	personCopy.Status.AvailableReplicas = deployment.Status.AvailableReplicas
+	personCopy.Status.IsAdult = isAdult
 	// If the CustomResourceSubresources feature gate is not enabled,
 	// we must use Update instead of UpdateStatus to update the Status block of the Person resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.SamplecontrollerV1alpha1().People(person.Namespace).UpdateStatus(context.TODO(), personCopy, metav1.UpdateOptions{})
+	_, err := c.sampleclientset.PeopleV1alpha1().Persons(person.Namespace).UpdateStatus(context.TODO(), personCopy, metav1.UpdateOptions{})
 	return err
 }
 
@@ -374,7 +329,7 @@ func (c *Controller) handleObject(obj interface{}) {
 			return
 		}
 
-		person, err := c.peopleLister.People(object.GetNamespace()).Get(ownerRef.Name)
+		person, err := c.peopleLister.Persons(object.GetNamespace()).Get(ownerRef.Name)
 		if err != nil {
 			klog.V(4).Infof("ignoring orphaned object '%s/%s' of person '%s'", object.GetNamespace(), object.GetName(), ownerRef.Name)
 			return
@@ -382,43 +337,5 @@ func (c *Controller) handleObject(obj interface{}) {
 
 		c.enqueuePerson(person)
 		return
-	}
-}
-
-// newDeployment creates a new Deployment for a Person resource. It also sets
-// the appropriate OwnerReferences on the resource so handleObject can discover
-// the Person resource that 'owns' it.
-func newDeployment(person *samplev1alpha1.Person) *appsv1.Deployment {
-	labels := map[string]string{
-		"app":        "nginx",
-		"controller": person.Name,
-	}
-	return &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      person.Spec.DeploymentName,
-			Namespace: person.Namespace,
-			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(person, samplev1alpha1.SchemeGroupVersion.WithKind("Person")),
-			},
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: person.Spec.Replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "nginx",
-							Image: "nginx:latest",
-						},
-					},
-				},
-			},
-		},
 	}
 }

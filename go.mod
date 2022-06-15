@@ -5,11 +5,12 @@ module github.com/andreaskaris/people-controller
 go 1.18
 
 require (
-	k8s.io/api v0.0.0-20220613074849-6b0201da8019
-	k8s.io/apimachinery v0.0.0-20220613074648-b90ea24d2fd6
-	k8s.io/client-go v0.0.0-20220613075149-d4fc9af2dfad
-	k8s.io/code-generator v0.0.0-20220613074454-f2ea99579e3b
+	k8s.io/api v0.24.1
+	k8s.io/apimachinery v0.24.1
+	k8s.io/client-go v0.24.1
+	k8s.io/code-generator v0.24.1
 	k8s.io/klog/v2 v2.60.1
+	k8s.io/sample-controller v0.24.1
 )
 
 require (
@@ -49,7 +50,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect

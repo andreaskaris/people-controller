@@ -190,15 +190,13 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
-# gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
-## explicit
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/api v0.0.0-20220613074849-6b0201da8019 => k8s.io/api v0.0.0-20220613074849-6b0201da8019
+# k8s.io/api v0.24.1 => k8s.io/api v0.0.0-20220613074849-6b0201da8019
 ## explicit; go 1.18
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
@@ -245,7 +243,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.0.0-20220613074648-b90ea24d2fd6 => k8s.io/apimachinery v0.0.0-20220613074648-b90ea24d2fd6
+# k8s.io/apimachinery v0.24.1 => k8s.io/apimachinery v0.0.0-20220613074648-b90ea24d2fd6
 ## explicit; go 1.18
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
@@ -289,7 +287,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v0.0.0-20220613075149-d4fc9af2dfad => k8s.io/client-go v0.0.0-20220613075149-d4fc9af2dfad
+# k8s.io/client-go v0.24.1 => k8s.io/client-go v0.0.0-20220613075149-d4fc9af2dfad
 ## explicit; go 1.18
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -560,7 +558,7 @@ k8s.io/client-go/util/flowcontrol
 k8s.io/client-go/util/homedir
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.0.0-20220613074454-f2ea99579e3b => k8s.io/code-generator v0.0.0-20220613074454-f2ea99579e3b
+# k8s.io/code-generator v0.24.1 => k8s.io/code-generator v0.0.0-20220613074454-f2ea99579e3b
 ## explicit; go 1.18
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -630,6 +628,21 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/sets
 k8s.io/kube-openapi/pkg/validation/spec
+# k8s.io/sample-controller v0.24.1
+## explicit; go 1.16
+k8s.io/sample-controller/pkg/apis/samplecontroller
+k8s.io/sample-controller/pkg/apis/samplecontroller/v1alpha1
+k8s.io/sample-controller/pkg/generated/clientset/versioned
+k8s.io/sample-controller/pkg/generated/clientset/versioned/fake
+k8s.io/sample-controller/pkg/generated/clientset/versioned/scheme
+k8s.io/sample-controller/pkg/generated/clientset/versioned/typed/samplecontroller/v1alpha1
+k8s.io/sample-controller/pkg/generated/clientset/versioned/typed/samplecontroller/v1alpha1/fake
+k8s.io/sample-controller/pkg/generated/informers/externalversions
+k8s.io/sample-controller/pkg/generated/informers/externalversions/internalinterfaces
+k8s.io/sample-controller/pkg/generated/informers/externalversions/samplecontroller
+k8s.io/sample-controller/pkg/generated/informers/externalversions/samplecontroller/v1alpha1
+k8s.io/sample-controller/pkg/generated/listers/samplecontroller/v1alpha1
+k8s.io/sample-controller/pkg/signals
 # k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 ## explicit; go 1.12
 k8s.io/utils/buffer

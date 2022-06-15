@@ -10,8 +10,17 @@ spec:
 apiVersion: people.example.com/v1alpha1
 kind: Person
 metadata:
+  name: laomao
+spec:
+  firstName: "Lao"
+  lastName: "Mao"
+  age: 38
+---
+apiVersion: people.example.com/v1alpha1
+kind: Person
+metadata:
   name: xiaomao
 spec:
   firstName: "Xiao"
   lastName: "Mao"
-  age: 38
+  age: 17
