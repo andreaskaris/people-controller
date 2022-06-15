@@ -37,11 +37,11 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 
-	samplev1alpha1 "github.com/andreaskaris/people-controller/pkg/apis/personscontroller/v1alpha1"
-	clientset "github.com/andreaskaris/people-controller/pkg/generated/clientset/versioned"
-	samplescheme "github.com/andreaskaris/people-controller/pkg/generated/clientset/versioned/scheme"
-	informers "github.com/andreaskaris/people-controller/pkg/generated/informers/externalversions/personscontroller/v1alpha1"
-	listers "github.com/andreaskaris/people-controller/pkg/generated/listers/personscontroller/v1alpha1"
+	peoplev1alpha1 "github.com/andreaskaris/people-controller/pkg/apis/personscontroller/v1alpha1"
+	peopleclientset "github.com/andreaskaris/people-controller/pkg/generated/clientset/versioned"
+	peoplescheme "github.com/andreaskaris/people-controller/pkg/generated/clientset/versioned/scheme"
+	peopleinformers "github.com/andreaskaris/people-controller/pkg/generated/informers/externalversions/personscontroller/v1alpha1"
+	peoplelisters "github.com/andreaskaris/people-controller/pkg/generated/listers/personscontroller/v1alpha1"
 )
 
 const controllerAgentName = "people-controller"
@@ -65,12 +65,12 @@ const (
 type Controller struct {
 	// kubeclientset is a standard kubernetes clientset
 	kubeclientset kubernetes.Interface
-	// sampleclientset is a clientset for our own API group
-	sampleclientset clientset.Interface
+	// peopleclientset is a clientset for our own API group
+	peopleclientset peopleclientset.Interface
 
 	deploymentsLister appslisters.DeploymentLister
 	deploymentsSynced cache.InformerSynced
-	peopleLister      listers.PersonLister
+	peopleLister      peoplelisters.PersonLister
 	peopleSynced      cache.InformerSynced
 
 	// workqueue is a rate limited work queue. This is used to queue work to be
@@ -87,14 +87,14 @@ type Controller struct {
 // NewController returns a new sample controller
 func NewController(
 	kubeclientset kubernetes.Interface,
-	sampleclientset clientset.Interface,
+	sampleclientset peopleclientset.Interface,
 	deploymentInformer appsinformers.DeploymentInformer,
-	personInformer informers.PersonInformer) *Controller {
+	personInformer peopleinformers.PersonInformer) *Controller {
 
 	// Create event broadcaster
 	// Add sample-controller types to the default Kubernetes Scheme so Events can be
 	// logged for sample-controller types.
-	utilruntime.Must(samplescheme.AddToScheme(scheme.Scheme))
+	utilruntime.Must(peoplescheme.AddToScheme(scheme.Scheme))
 	klog.V(4).Info("Creating event broadcaster")
 	eventBroadcaster := record.NewBroadcaster()
 	eventBroadcaster.StartStructuredLogging(0)
@@ -103,7 +103,7 @@ func NewController(
 
 	controller := &Controller{
 		kubeclientset:     kubeclientset,
-		sampleclientset:   sampleclientset,
+		peopleclientset:   sampleclientset,
 		deploymentsLister: deploymentInformer.Lister(),
 		deploymentsSynced: deploymentInformer.Informer().HasSynced,
 		peopleLister:      personInformer.Lister(),
@@ -273,7 +273,7 @@ func (c *Controller) syncHandler(key string) error {
 	return nil
 }
 
-func (c *Controller) updatePersonStatus(person *samplev1alpha1.Person, isAdult bool) error {
+func (c *Controller) updatePersonStatus(person *peoplev1alpha1.Person, isAdult bool) error {
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
@@ -283,7 +283,7 @@ func (c *Controller) updatePersonStatus(person *samplev1alpha1.Person, isAdult b
 	// we must use Update instead of UpdateStatus to update the Status block of the Person resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.PeopleV1alpha1().Persons(person.Namespace).UpdateStatus(context.TODO(), personCopy, metav1.UpdateOptions{})
+	_, err := c.peopleclientset.PeopleV1alpha1().Persons(person.Namespace).UpdateStatus(context.TODO(), personCopy, metav1.UpdateOptions{})
 	return err
 }
 
