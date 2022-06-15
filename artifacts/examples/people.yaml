@@ -1,0 +1,17 @@
+apiVersion: people.example.com/v1alpha1
+kind: Person
+metadata:
+  name: jeremymiller
+spec:
+  firstName: "Jeremy"
+  lastName: "Miller"
+  age: 25
+---
+apiVersion: people.example.com/v1alpha1
+kind: Person
+metadata:
+  name: xiaomao
+spec:
+  firstName: "Xiao"
+  lastName: "Mao"
+  age: 38
